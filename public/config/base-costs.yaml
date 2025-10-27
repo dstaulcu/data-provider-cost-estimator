@@ -1,0 +1,43 @@
+# Base costs for data services (per unit)
+# All costs are in USD
+# Variables should match what formulas expect (without service prefix)
+
+# Transport service costs
+ingestion_cost_per_gb: 0.01
+egress_cost_per_gb: 0.02
+bandwidth_base_cost: 50.00
+
+# Storage service costs  
+hot_storage_per_gb_month: 0.025
+warm_storage_per_gb_month: 0.015
+cold_storage_per_gb_month: 0.005
+archive_storage_per_gb_month: 0.001
+
+# Extraction service costs
+basic_extraction_per_hour: 15.00
+advanced_extraction_per_hour: 45.00
+ml_extraction_per_hour: 120.00
+
+# Enrichment service costs
+data_cleaning_per_1k_records: 2.50
+data_validation_per_1k_records: 1.75
+data_transformation_per_1k_records: 3.00
+metadata_enrichment_per_1k_records: 4.50
+
+# Modeling service costs
+simple_model_per_hour: 25.00
+complex_model_per_hour: 75.00
+deep_learning_per_hour: 200.00
+model_inference_per_1k_requests: 0.50
+
+# Search service costs
+basic_search_per_1k_queries: 1.00
+semantic_search_per_1k_queries: 5.00
+vector_search_per_1k_queries: 8.00
+index_maintenance_per_gb_month: 2.00
+
+# Exploration service costs
+basic_analytics_per_hour: 20.00
+advanced_analytics_per_hour: 60.00
+real_time_analytics_per_hour: 150.00
+dashboard_hosting_per_month: 25.00

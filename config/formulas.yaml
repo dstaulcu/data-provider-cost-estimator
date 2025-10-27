@@ -1,0 +1,76 @@
+# Cost calculation formulas for each service type
+# Variables can be referenced with $variable_name
+# Supports tiered pricing, multipliers, and conditional logic
+
+transport:
+  type: "multiplier"
+  base: "$data_volume_gb * $ingestion_cost_per_gb + $egress_volume_gb * $egress_cost_per_gb + $bandwidth_base_cost"
+  multipliers:
+    - variable: "priority_level"  # 1=standard, 2=priority, 3=urgent
+      factor: 1.5
+    - variable: "encryption_level"  # 1=basic, 2=advanced, 3=enterprise
+      factor: 1.2
+
+storage:
+  type: "tiered"
+  volumeVar: "storage_volume_gb"
+  tiers:
+    - limit: 1000
+      rate: "$hot_storage_per_gb_month"
+    - limit: 10000
+      rate: "$warm_storage_per_gb_month"
+    - limit: 100000
+      rate: "$cold_storage_per_gb_month"
+    - limit: null  # unlimited
+      rate: "$archive_storage_per_gb_month"
+
+extraction:
+  type: "conditional"
+  conditions:
+    - if: { variable: "extraction_complexity", operator: "==", value: 1 }
+      then: "$processing_hours * $basic_extraction_per_hour"
+    - if: { variable: "extraction_complexity", operator: "==", value: 2 }
+      then: "$processing_hours * $advanced_extraction_per_hour"
+    - if: { variable: "extraction_complexity", operator: ">=", value: 3 }
+      then: "$processing_hours * $ml_extraction_per_hour"
+  else: "$processing_hours * $basic_extraction_per_hour"
+
+enrichment:
+  type: "multiplier"
+  base: "($record_count / 1000) * ($data_cleaning_per_1k_records + $data_validation_per_1k_records + $data_transformation_per_1k_records)"
+  multipliers:
+    - variable: "data_quality_score"  # 1-5, lower quality = higher cost
+      factor: 1.1
+    - variable: "schema_complexity"   # 1-3, higher complexity = higher cost
+      factor: 1.25
+
+modeling:
+  type: "conditional"
+  conditions:
+    - if: { variable: "model_type", operator: "==", value: "simple" }
+      then: "$training_hours * $simple_model_per_hour + ($inference_requests / 1000) * $model_inference_per_1k_requests"
+    - if: { variable: "model_type", operator: "==", value: "complex" }
+      then: "$training_hours * $complex_model_per_hour + ($inference_requests / 1000) * $model_inference_per_1k_requests"
+    - if: { variable: "model_type", operator: "==", value: "deep_learning" }
+      then: "$training_hours * $deep_learning_per_hour + ($inference_requests / 1000) * $model_inference_per_1k_requests"
+  else: "$training_hours * $simple_model_per_hour"
+
+search:
+  type: "multiplier"
+  base: "($search_queries / 1000) * ($basic_search_per_1k_queries + $semantic_search_per_1k_queries) + $search_index_gb * $index_maintenance_per_gb_month"
+  multipliers:
+    - variable: "search_complexity"  # 1=basic, 2=semantic, 3=vector
+      factor: 2.0
+    - variable: "real_time_requirements"  # 1=batch, 2=near-real-time, 3=real-time
+      factor: 1.5
+
+exploration:
+  type: "conditional"
+  conditions:
+    - if: { variable: "analytics_type", operator: "==", value: "basic" }
+      then: "$analysis_hours * $basic_analytics_per_hour + $dashboard_hosting_per_month"
+    - if: { variable: "analytics_type", operator: "==", value: "advanced" }
+      then: "$analysis_hours * $advanced_analytics_per_hour + $dashboard_hosting_per_month"
+    - if: { variable: "analytics_type", operator: "==", value: "real_time" }
+      then: "$analysis_hours * $real_time_analytics_per_hour + $dashboard_hosting_per_month"
+  else: "$analysis_hours * $basic_analytics_per_hour"

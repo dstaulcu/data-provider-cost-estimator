@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Provider Cost Estimator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Data Provider Cost Estimator</h1>
+            <p class="subtitle">Calculate costs for transport, storage, extraction, enrichment, modeling, search & exploration</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Service Tabs -->
+            <div class="service-tabs">
+                <button class="tab-button active" data-service="transport">Transport</button>
+                <button class="tab-button" data-service="storage">Storage</button>
+                <button class="tab-button" data-service="extraction">Extraction</button>
+                <button class="tab-button" data-service="enrichment">Enrichment</button>
+                <button class="tab-button" data-service="modeling">Modeling</button>
+                <button class="tab-button" data-service="search">Search</button>
+                <button class="tab-button" data-service="exploration">Exploration</button>
+            </div>
+
+            <div class="content-grid">
+                <!-- Variable Controls -->
+                <div class="controls-panel">
+                    <h2>Service Parameters</h2>
+                    <div id="variable-controls" class="variable-controls">
+                        <!-- Dynamic controls will be inserted here -->
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="calculate-btn" class="btn-primary">Calculate Costs</button>
+                        <button id="reset-btn" class="btn-secondary">Reset</button>
+                        <button id="export-btn" class="btn-secondary">Export Config</button>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="results-panel">
+                    <h2>Cost Breakdown</h2>
+                    
+                    <div class="total-cost">
+                        <span class="cost-label">Total Monthly Cost:</span>
+                        <span id="total-cost-value" class="cost-value">$0.00</span>
+                    </div>
+
+                    <div class="service-costs" id="service-costs">
+                        <!-- Service cost breakdown will be displayed here -->
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="cost-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="advanced-section">
+                <button id="advanced-toggle" class="btn-link">Advanced Settings</button>
+                <div id="advanced-panel" class="advanced-panel" style="display: none;">
+                    <h3>Global Multipliers</h3>
+                    <div class="multiplier-grid">
+                        <div class="multiplier-group">
+                            <label for="volume-tier">Volume Tier:</label>
+                            <select id="volume-tier">
+                                <option value="small">Small (&lt; 100GB)</option>
+                                <option value="medium">Medium (100GB - 1TB)</option>
+                                <option value="large">Large (1TB - 10TB)</option>
+                                <option value="enterprise">Enterprise (&gt; 10TB)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="multiplier-group">
+                            <label for="contract-type">Contract Type:</label>
+                            <select id="contract-type">
+                                <option value="pay_as_you_go">Pay-as-you-go</option>
+                                <option value="monthly_commitment">Monthly Commitment</option>
+                                <option value="annual_commitment">Annual Commitment</option>
+                                <option value="enterprise_agreement">Enterprise Agreement</option>
+                            </select>
+                        </div>
+                        
+                        <div class="multiplier-group">
+                            <label for="support-level">Support Level:</label>
+                            <select id="support-level">
+                                <option value="community">Community</option>
+                                <option value="standard">Standard</option>
+                                <option value="premium">Premium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        
+                        <div class="multiplier-group">
+                            <label for="sla-level">SLA Level:</label>
+                            <select id="sla-level">
+                                <option value="best_effort">Best Effort</option>
+                                <option value="standard_sla">Standard SLA</option>
+                                <option value="premium_sla">Premium SLA</option>
+                                <option value="enterprise_sla">Enterprise SLA</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Cost calculations are estimates based on current configuration. Actual costs may vary.</p>
+            <p>Configuration last updated: <span id="config-timestamp">Loading...</span></p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading configuration...</p>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Error</h3>
+            <p id="error-message"></p>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

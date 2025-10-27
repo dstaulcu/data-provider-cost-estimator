@@ -1,0 +1,82 @@
+# Volume and complexity multipliers
+# Applied based on usage patterns and service requirements
+
+volume_multipliers:
+  # Data volume tiers (GB)
+  small: 
+    threshold: 100
+    multiplier: 1.0
+  medium:
+    threshold: 1000
+    multiplier: 0.95
+  large:
+    threshold: 10000
+    multiplier: 0.90
+  enterprise:
+    threshold: 100000
+    multiplier: 0.85
+
+complexity_multipliers:
+  # Service complexity levels
+  transport:
+    basic: 1.0
+    encrypted: 1.2
+    real_time: 1.5
+    guaranteed_delivery: 1.8
+    
+  storage:
+    standard: 1.0
+    geo_replicated: 1.3
+    compliance_tier: 1.5
+    immutable: 1.2
+    
+  extraction:
+    structured: 1.0
+    semi_structured: 1.3
+    unstructured: 1.8
+    multimedia: 2.2
+    
+  enrichment:
+    basic_cleaning: 1.0
+    advanced_nlp: 1.5
+    ml_enhancement: 2.0
+    custom_rules: 1.3
+    
+  modeling:
+    supervised: 1.0
+    unsupervised: 1.2
+    deep_learning: 2.5
+    ensemble: 1.8
+    
+  search:
+    keyword: 1.0
+    semantic: 1.8
+    vector: 2.5
+    hybrid: 3.0
+    
+  exploration:
+    standard_reports: 1.0
+    interactive_dashboards: 1.4
+    real_time_streaming: 2.0
+    predictive_analytics: 2.5
+
+contract_multipliers:
+  # Contract type adjustments
+  pay_as_you_go: 1.0
+  monthly_commitment: 0.95
+  annual_commitment: 0.85
+  enterprise_agreement: 0.75
+
+support_multipliers:
+  # Support level adjustments
+  community: 1.0
+  standard: 1.05
+  premium: 1.15
+  enterprise: 1.25
+
+sla_multipliers:
+  # Service Level Agreement adjustments
+  best_effort: 1.0
+  standard_sla: 1.1
+  premium_sla: 1.25
+  enterprise_sla: 1.5
