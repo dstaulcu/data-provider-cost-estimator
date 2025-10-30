@@ -7,6 +7,31 @@ import { CostCalculationEngine } from './cost-engine.js';
 import { ConfigManager } from './config-manager.js';
 import { UIController } from './ui-controller.js';
 
+const API_GATEWAY_URL = 'https://tlo03uxhod.execute-api.us-east-1.amazonaws.com/prod/auth';
+
+async function authenticateUser() {
+    try {
+        const response = await fetch(API_GATEWAY_URL, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            // Show error modal or restrict access
+            throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
+        }
+        const userData = await response.json();
+        // TODO: Use userData to update UI or store token
+        return userData;
+    } catch (error) {
+        // Show error modal or restrict access
+        console.error('Authentication error:', error);
+        // Optionally, display error to user
+        if (typeof showError === 'function') {
+            showError('Authentication failed: ' + error.message);
+        }
+    }
+}
+
 class CostEstimatorApp {
   constructor() {
     this.configManager = new ConfigManager();
@@ -23,6 +48,9 @@ class CostEstimatorApp {
     try {
       // Show loading overlay
       this.showLoading(true);
+
+      console.log('Authenticating userr...');
+      authenticateUser();      
 
       // Load configuration
       console.log('Loading configuration...');
