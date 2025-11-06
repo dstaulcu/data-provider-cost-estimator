@@ -8,7 +8,8 @@ export class ConfigManager {
     this.config = {
       baseCosts: {},
       formulas: {},
-      multipliers: {}
+      multipliers: {},
+      systems: {}
     };
     this.isLoaded = false;
   }
@@ -28,8 +29,13 @@ export class ConfigManager {
       this.config.formulas = formulas;
       this.config.multipliers = multipliers;
 
-      // Base costs are already flat, no need to flatten
-      this.config.flatBaseCosts = baseCosts;
+      // Extract systems from baseCosts
+      if (baseCosts.systems) {
+        this.config.systems = baseCosts.systems;
+      }
+      
+      // For backward compatibility, create flat costs from first system
+      this.config.flatBaseCosts = this.getSystemCosts(Object.keys(this.config.systems)[0]);
       
       this.isLoaded = true;
       return this.config;
@@ -54,6 +60,35 @@ export class ConfigManager {
       console.error(`Error loading YAML file ${path}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Get available systems
+   */
+  getSystems() {
+    return this.config.systems || {};
+  }
+
+  /**
+   * Get costs for a specific system
+   */
+  getSystemCosts(systemId) {
+    const system = this.config.systems[systemId];
+    return system ? system.components : {};
+  }
+
+  /**
+   * Get system information
+   */
+  getSystemInfo(systemId) {
+    const system = this.config.systems[systemId];
+    if (!system) return null;
+    
+    return {
+      id: systemId,
+      name: system.name,
+      description: system.description
+    };
   }
 
   /**

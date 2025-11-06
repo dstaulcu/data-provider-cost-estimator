@@ -8,15 +8,82 @@ export class UIController {
     this.costEngine = costEngine;
     this.configManager = configManager;
     this.chart = null;
+    this.comparisonChart = null;
     this.currentService = 'transport';
+    this.selectedSystems = [];
   }
 
   /**
    * Initialize UI components
    */
   async init() {
+    this.setupSystemSelection();
     this.setupChart();
+    this.setupComparisonChart();
     this.updateConfigTimestamp();
+  }
+
+  /**
+   * Setup system selection checkboxes
+   */
+  setupSystemSelection() {
+    const container = document.getElementById('system-checkboxes');
+    const systems = this.configManager.getSystems();
+    
+    container.innerHTML = '';
+    
+    for (const [systemId, systemData] of Object.entries(systems)) {
+      const item = document.createElement('div');
+      item.className = 'system-checkbox-item';
+      item.innerHTML = `
+        <input type="checkbox" id="system-${systemId}" value="${systemId}" class="system-checkbox">
+        <div class="system-info">
+          <div class="system-name">${systemData.name}</div>
+          <div class="system-description">${systemData.description}</div>
+        </div>
+      `;
+      
+      const checkbox = item.querySelector('input');
+      checkbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          this.selectedSystems.push(systemId);
+          item.classList.add('selected');
+        } else {
+          this.selectedSystems = this.selectedSystems.filter(id => id !== systemId);
+          item.classList.remove('selected');
+        }
+        this.updateSystemSelection();
+      });
+      
+      // Select first system by default
+      if (Object.keys(systems).indexOf(systemId) === 0) {
+        checkbox.checked = true;
+        this.selectedSystems.push(systemId);
+        item.classList.add('selected');
+      }
+      
+      container.appendChild(item);
+    }
+  }
+
+  /**
+   * Handle system selection changes
+   */
+  updateSystemSelection() {
+    // Show/hide comparison chart based on number of selected systems
+    const comparisonContainer = document.getElementById('system-comparison-chart-container');
+    if (this.selectedSystems.length > 1) {
+      comparisonContainer.style.display = 'block';
+    } else {
+      comparisonContainer.style.display = 'none';
+    }
+  }
+
+  /**
+   * Get selected systems
+   */
+  getSelectedSystems() {
+    return this.selectedSystems;
   }
 
   /**
@@ -332,14 +399,37 @@ export class UIController {
    * Update results display
    */
   updateResults(results) {
-    // Update total cost
+    // Update total cost with system count indicator if multi-system
+    const totalLabel = results.isMultiSystem 
+      ? `Combined Total (${results.systemCount} systems):`
+      : 'Total Monthly Cost:';
+    
+    // Update the label if needed
+    const costLabelElement = document.querySelector('.cost-label');
+    if (costLabelElement) {
+      costLabelElement.textContent = totalLabel;
+    }
+    
     document.getElementById('total-cost-value').textContent = 
       '$' + results.total.toFixed(2);
 
     // Update service costs
     const serviceCostsContainer = document.getElementById('service-costs');
     serviceCostsContainer.innerHTML = '';
+    
+    // Add note for multi-system view
+    if (results.isMultiSystem) {
+      const noteItem = document.createElement('div');
+      noteItem.className = 'multi-system-note';
+      noteItem.style.cssText = 'padding: 10px; background: #eff6ff; border-left: 3px solid #2563eb; margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem;';
+      noteItem.innerHTML = `
+        <strong>📊 Combined View:</strong> Showing total costs across all ${results.systemCount} selected systems. 
+        See the comparison chart below for individual system breakdowns.
+      `;
+      serviceCostsContainer.appendChild(noteItem);
+    }
 
+    // Show supported services
     results.breakdown.forEach(item => {
       const serviceItem = document.createElement('div');
       serviceItem.className = 'service-cost-item';
@@ -354,6 +444,21 @@ export class UIController {
 
       serviceCostsContainer.appendChild(serviceItem);
     });
+    
+    // Show unsupported services if any
+    if (results.unsupportedServices && results.unsupportedServices.length > 0) {
+      const unsupportedItem = document.createElement('div');
+      unsupportedItem.className = 'service-cost-item unsupported-services';
+      unsupportedItem.innerHTML = `
+        <div class="service-info">
+          <span class="service-name" style="color: #64748b; font-style: italic;">
+            Not supported: ${results.unsupportedServices.join(', ')}
+          </span>
+        </div>
+        <span class="service-cost" style="color: #64748b;">N/A</span>
+      `;
+      serviceCostsContainer.appendChild(unsupportedItem);
+    }
 
     // Update chart
     this.updateChart(results.breakdown);
@@ -406,6 +511,53 @@ export class UIController {
   }
 
   /**
+   * Setup comparison chart
+   */
+  setupComparisonChart() {
+    const ctx = document.getElementById('system-comparison-chart').getContext('2d');
+    
+    this.comparisonChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              padding: 15,
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.dataset.label || '';
+                const value = context.parsed.y || 0;
+                return `${label}: $${value.toFixed(2)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toFixed(0);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
    * Update chart with new data
    */
   updateChart(breakdown) {
@@ -417,6 +569,46 @@ export class UIController {
     this.chart.data.labels = labels;
     this.chart.data.datasets[0].data = data;
     this.chart.update();
+  }
+
+  /**
+   * Update comparison chart with system results
+   */
+  updateComparisonChart(systemResults) {
+    if (!this.comparisonChart || systemResults.length <= 1) return;
+
+    // Get all unique services across all systems (only supported ones)
+    const allServices = new Set();
+    systemResults.forEach(result => {
+      result.breakdown.forEach(item => allServices.add(item.service));
+    });
+    const serviceLabels = Array.from(allServices).map(s => 
+      s.charAt(0).toUpperCase() + s.slice(1)
+    );
+
+    // Create datasets for each system
+    const colors = ['#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0891b2'];
+    const datasets = systemResults.map((result, index) => {
+      const systemInfo = this.configManager.getSystemInfo(result.systemId);
+      const data = Array.from(allServices).map(service => {
+        const item = result.breakdown.find(b => b.service === service);
+        // Return cost if service is supported, 0 if not (null means not supported)
+        return item ? item.cost : 0;
+      });
+
+      return {
+        label: systemInfo.name,
+        data: data,
+        backgroundColor: colors[index % colors.length],
+        borderWidth: 1
+      };
+    });
+
+    this.comparisonChart.data.labels = serviceLabels;
+    this.comparisonChart.data.datasets = datasets;
+    this.comparisonChart.update();
+    
+    console.log(`Comparison chart updated with ${serviceLabels.length} services across ${systemResults.length} systems`);
   }
 
   /**

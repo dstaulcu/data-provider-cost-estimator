@@ -1,43 +1,153 @@
 # Base costs for data services (per unit)
 # All costs are in USD
-# Variables should match what formulas expect (without service prefix)
+# Organized by system and component
 
-# Transport service costs
-ingestion_cost_per_gb: 0.01
-egress_cost_per_gb: 0.02
-bandwidth_base_cost: 50.00
-
-# Storage service costs  
-hot_storage_per_gb_month: 0.025
-warm_storage_per_gb_month: 0.015
-cold_storage_per_gb_month: 0.005
-archive_storage_per_gb_month: 0.001
-
-# Extraction service costs
-basic_extraction_per_hour: 15.00
-advanced_extraction_per_hour: 45.00
-ml_extraction_per_hour: 120.00
-
-# Enrichment service costs
-data_cleaning_per_1k_records: 2.50
-data_validation_per_1k_records: 1.75
-data_transformation_per_1k_records: 3.00
-metadata_enrichment_per_1k_records: 4.50
-
-# Modeling service costs
-simple_model_per_hour: 25.00
-complex_model_per_hour: 75.00
-deep_learning_per_hour: 200.00
-model_inference_per_1k_requests: 0.50
-
-# Search service costs
-basic_search_per_1k_queries: 1.00
-semantic_search_per_1k_queries: 5.00
-vector_search_per_1k_queries: 8.00
-index_maintenance_per_gb_month: 2.00
-
-# Exploration service costs
-basic_analytics_per_hour: 20.00
-advanced_analytics_per_hour: 60.00
-real_time_analytics_per_hour: 150.00
-dashboard_hosting_per_month: 25.00
+# System definitions
+systems:
+  system_a:
+    name: "System A - Standard Platform"
+    description: "Cost-effective solution using standard components"
+    components:
+      # Transport service costs
+      ingestion_cost_per_gb: 0.01
+      egress_cost_per_gb: 0.02
+      bandwidth_base_cost: 50.00
+      
+      # Storage service costs  
+      hot_storage_per_gb_month: 0.025
+      warm_storage_per_gb_month: 0.015
+      cold_storage_per_gb_month: 0.005
+      archive_storage_per_gb_month: 0.001
+      
+      # Extraction service costs
+      basic_extraction_per_hour: 15.00
+      advanced_extraction_per_hour: 45.00
+      ml_extraction_per_hour: 120.00
+      
+      # Enrichment service costs
+      data_cleaning_per_1k_records: 2.50
+      data_validation_per_1k_records: 1.75
+      data_transformation_per_1k_records: 3.00
+      metadata_enrichment_per_1k_records: 4.50
+      
+      # Modeling service costs
+      simple_model_per_hour: 25.00
+      complex_model_per_hour: 75.00
+      deep_learning_per_hour: 200.00
+      model_inference_per_1k_requests: 0.50
+      
+      # Search service costs
+      basic_search_per_1k_queries: 1.00
+      semantic_search_per_1k_queries: 5.00
+      vector_search_per_1k_queries: 8.00
+      index_maintenance_per_gb_month: 2.00
+      
+      # Exploration service costs
+      basic_analytics_per_hour: 20.00
+      advanced_analytics_per_hour: 60.00
+      real_time_analytics_per_hour: 150.00
+      dashboard_hosting_per_month: 25.00
+  
+  system_b:
+    name: "System B - Premium Platform"
+    description: "High-performance solution with advanced components"
+    components:
+      # Transport service costs (20% higher for premium infrastructure)
+      ingestion_cost_per_gb: 0.012
+      egress_cost_per_gb: 0.024
+      bandwidth_base_cost: 75.00
+      
+      # Storage service costs (faster SSDs, more redundancy)
+      hot_storage_per_gb_month: 0.035
+      warm_storage_per_gb_month: 0.022
+      cold_storage_per_gb_month: 0.008
+      archive_storage_per_gb_month: 0.0015
+      
+      # Extraction service costs (GPU-accelerated)
+      basic_extraction_per_hour: 22.00
+      advanced_extraction_per_hour: 65.00
+      ml_extraction_per_hour: 180.00
+      
+      # Enrichment service costs (advanced algorithms)
+      data_cleaning_per_1k_records: 3.50
+      data_validation_per_1k_records: 2.50
+      data_transformation_per_1k_records: 4.25
+      metadata_enrichment_per_1k_records: 6.00
+      
+      # Modeling service costs (specialized hardware)
+      simple_model_per_hour: 35.00
+      complex_model_per_hour: 110.00
+      deep_learning_per_hour: 300.00
+      model_inference_per_1k_requests: 0.75
+      
+      # Search service costs (distributed architecture)
+      basic_search_per_1k_queries: 1.50
+      semantic_search_per_1k_queries: 7.50
+      vector_search_per_1k_queries: 12.00
+      index_maintenance_per_gb_month: 3.00
+      
+      # Exploration service costs (real-time processing)
+      basic_analytics_per_hour: 30.00
+      advanced_analytics_per_hour: 90.00
+      real_time_analytics_per_hour: 225.00
+      dashboard_hosting_per_month: 40.00
+  
+  system_c:
+    name: "System C - Economy Platform"
+    description: "Budget-friendly solution for basic workloads"
+    components:
+      # Transport service costs (30% lower for economy tier)
+      ingestion_cost_per_gb: 0.007
+      egress_cost_per_gb: 0.014
+      bandwidth_base_cost: 35.00
+      
+      # Storage service costs (slower but cheaper)
+      hot_storage_per_gb_month: 0.018
+      warm_storage_per_gb_month: 0.010
+      cold_storage_per_gb_month: 0.003
+      archive_storage_per_gb_month: 0.0007
+      
+      # Extraction service costs (shared resources)
+      basic_extraction_per_hour: 10.00
+      advanced_extraction_per_hour: 30.00
+      ml_extraction_per_hour: 85.00
+      
+      # Enrichment service costs (basic processing)
+      data_cleaning_per_1k_records: 1.80
+      data_validation_per_1k_records: 1.20
+      data_transformation_per_1k_records: 2.10
+      metadata_enrichment_per_1k_records: 3.00
+      
+      # Modeling service costs (CPU-only)
+      simple_model_per_hour: 18.00
+      complex_model_per_hour: 52.00
+      deep_learning_per_hour: 140.00
+      model_inference_per_1k_requests: 0.35
+      
+      # Search service costs (basic indexing)
+      basic_search_per_1k_queries: 0.70
+      semantic_search_per_1k_queries: 3.50
+      vector_search_per_1k_queries: 5.50
+      index_maintenance_per_gb_month: 1.40
+      
+      # Exploration service costs (batch processing)
+      basic_analytics_per_hour: 14.00
+      advanced_analytics_per_hour: 42.00
+      real_time_analytics_per_hour: 105.00
+      dashboard_hosting_per_month: 18.00
+  
+  system_d:
+    name: "System D - Storage Only Platform"
+    description: "Specialized system for raw data storage with file share access"
+    # This system only supports storage and basic exploration (file share)
+    # Other services are not available
+    components:
+      # Storage service costs (optimized for large volumes)
+      hot_storage_per_gb_month: 0.020
+      warm_storage_per_gb_month: 0.012
+      cold_storage_per_gb_month: 0.004
+      archive_storage_per_gb_month: 0.0008
+      
+      # Exploration service costs (file share only - no analytics)
+      dashboard_hosting_per_month: 15.00
+      # Note: No transport, extraction, enrichment, modeling, or search capabilities

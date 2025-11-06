@@ -8,7 +8,16 @@ export class CostCalculationEngine {
     this.baseCosts = config.baseCosts || {};
     this.formulas = config.formulas || {};
     this.multipliers = config.multipliers || {};
+    this.systems = config.systems || {};
     this.variables = new Map();
+    this.currentSystemCosts = {};
+  }
+
+  /**
+   * Set system-specific costs
+   */
+  setSystemCosts(systemId, costs) {
+    this.currentSystemCosts = costs;
   }
 
   /**
@@ -26,7 +35,7 @@ export class CostCalculationEngine {
   }
 
   /**
-   * Calculate cost for a specific service type
+   * Calculate cost for a specific service type with specific system costs
    */
   calculateServiceCost(serviceType, parameters = {}) {
     const formula = this.formulas[serviceType];
@@ -34,26 +43,95 @@ export class CostCalculationEngine {
       throw new Error(`No formula found for service type: ${serviceType}`);
     }
 
-    // Merge parameters with current variables
-    const context = { ...Object.fromEntries(this.variables), ...parameters };
+    // Merge system costs, parameters, and current variables
+    const context = { 
+      ...this.currentSystemCosts,
+      ...Object.fromEntries(this.variables), 
+      ...parameters 
+    };
     
     return this.evaluateFormula(formula, context);
   }
 
   /**
-   * Calculate total cost across all services
+   * Check if a system supports a specific service
+   */
+  checkServiceSupport(serviceType, systemCosts) {
+    // Get required cost variables for this service from the formula
+    const requiredVars = this.getRequiredVariables(serviceType);
+    
+    // Check if system has all required cost components in its YAML configuration
+    // We only check systemCosts (from YAML), not user input variables
+    for (const varName of requiredVars) {
+      if (!(varName in systemCosts)) {
+        console.log(`⊘ ${serviceType}: Not supported - missing component '${varName}'`);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * Get required variables for a service from its formula
+   */
+  getRequiredVariables(serviceType) {
+    const formula = this.formulas[serviceType];
+    const requiredVars = new Set();
+    
+    // Extract variable names from formula strings
+    const extractVars = (str) => {
+      if (typeof str === 'string') {
+        const matches = str.matchAll(/\$([a-zA-Z_][a-zA-Z0-9_]*)/g);
+        for (const match of matches) {
+          // Only include cost variables (those ending in _per_*, _cost, _price, etc.)
+          const varName = match[1];
+          if (varName.includes('_per_') || varName.includes('_cost') || 
+              varName.includes('_price') || varName.includes('_base')) {
+            requiredVars.add(varName);
+          }
+        }
+      }
+    };
+    
+    // Recursively extract from formula object
+    const traverse = (obj) => {
+      if (typeof obj === 'string') {
+        extractVars(obj);
+      } else if (typeof obj === 'object' && obj !== null) {
+        Object.values(obj).forEach(traverse);
+      }
+    };
+    
+    traverse(formula);
+    return Array.from(requiredVars);
+  }
+
+  /**
+   * Calculate total cost across all services for a specific system
    */
   calculateTotalCost(serviceParameters = {}) {
     const costs = {};
+    const supportedServices = [];
+    const unsupportedServices = [];
     let total = 0;
 
     console.log('Calculating total cost for all services...');
 
     for (const serviceType of Object.keys(this.formulas)) {
+      // Check if this system supports this service
+      if (!this.checkServiceSupport(serviceType, this.currentSystemCosts)) {
+        console.log(`⊘ ${serviceType}: Not supported by this system`);
+        costs[serviceType] = null; // null indicates unsupported
+        unsupportedServices.push(serviceType);
+        continue;
+      }
+      
       try {
         const serviceCost = this.calculateServiceCost(serviceType, serviceParameters[serviceType] || {});
         costs[serviceType] = serviceCost;
-        console.log(`${serviceType} cost: ${serviceCost}`);
+        supportedServices.push(serviceType);
+        console.log(`✓ ${serviceType} cost: $${serviceCost.toFixed(2)}`);
         
         if (!isNaN(serviceCost)) {
           total += serviceCost;
@@ -66,13 +144,38 @@ export class CostCalculationEngine {
       }
     }
 
-    console.log('Total before breakdown:', total);
+    console.log(`Supported services: ${supportedServices.length}/${Object.keys(this.formulas).length}`);
+    if (unsupportedServices.length > 0) {
+      console.log(`Unsupported: ${unsupportedServices.join(', ')}`);
+    }
 
     return {
       services: costs,
       total,
-      breakdown: this.generateCostBreakdown(costs)
+      breakdown: this.generateCostBreakdown(costs),
+      supportedServices,
+      unsupportedServices
     };
+  }
+
+  /**
+   * Calculate costs for multiple systems
+   */
+  calculateMultiSystemCosts(systemIds, serviceParameters = {}) {
+    const results = [];
+
+    for (const systemId of systemIds) {
+      const systemCosts = this.systems[systemId]?.components || {};
+      this.setSystemCosts(systemId, systemCosts);
+      
+      const result = this.calculateTotalCost(serviceParameters);
+      results.push({
+        systemId,
+        ...result
+      });
+    }
+
+    return results;
   }
 
   /**
@@ -295,6 +398,11 @@ export class CostCalculationEngine {
     const breakdown = [];
     
     for (const [service, cost] of Object.entries(costs)) {
+      // Skip services that are null (unsupported)
+      if (cost === null) {
+        continue;
+      }
+      
       breakdown.push({
         service,
         cost,

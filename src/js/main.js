@@ -6,6 +6,7 @@
 import { CostCalculationEngine } from './cost-engine.js';
 import { ConfigManager } from './config-manager.js';
 import { UIController } from './ui-controller.js';
+import { ConsoleLogger } from './logger.js';
 
 const API_GATEWAY_URL = 'https://tlo03uxhod.execute-api.us-east-1.amazonaws.com/prod/auth';
 
@@ -37,6 +38,7 @@ class CostEstimatorApp {
     this.configManager = new ConfigManager();
     this.costEngine = null;
     this.uiController = null;
+    this.logger = null;
     this.currentService = 'transport';
     this.isInitialized = false;
   }
@@ -46,37 +48,49 @@ class CostEstimatorApp {
    */
   async init() {
     try {
+      // Initialize logger first
+      this.logger = new ConsoleLogger();
+      this.logger.init();
+      
+      console.log('=== Cost Estimator Application Starting ===');
+      
       // Show loading overlay
       this.showLoading(true);
 
-      console.log('Authenticating userr...');
-      authenticateUser();      
+      console.log('Authenticating user...');
+      // authenticateUser();      
 
       // Load configuration
       console.log('Loading configuration...');
       const config = await this.configManager.loadConfig();
+      console.log('Configuration loaded successfully');
       
       // Validate configuration
       this.configManager.validateConfig();
+      console.log('Configuration validated');
 
       // Initialize cost engine
       this.costEngine = new CostCalculationEngine(config);
+      console.log('Cost engine initialized');
       
       // Initialize UI controller
       this.uiController = new UIController(this.costEngine, this.configManager);
       await this.uiController.init();
+      console.log('UI controller initialized');
 
       // Set up event listeners
       this.setupEventListeners();
+      console.log('Event listeners configured');
 
       // Load default variables
       this.loadDefaultVariables();
+      console.log('Default variables loaded');
 
       // Initial calculation
       this.calculateCosts();
 
       this.isInitialized = true;
-      console.log('Application initialized successfully');
+      console.log('=== Application initialized successfully ===');
 
     } catch (error) {
       console.error('Failed to initialize application:', error);
@@ -116,6 +130,11 @@ class CostEstimatorApp {
     // Advanced settings toggle
     document.getElementById('advanced-toggle').addEventListener('click', () => {
       this.toggleAdvancedSettings();
+    });
+
+    // Resources panel toggle
+    document.getElementById('resources-toggle').addEventListener('click', () => {
+      this.toggleResourcesPanel();
     });
 
     // Variable input changes
@@ -242,18 +261,62 @@ class CostEstimatorApp {
     }
 
     try {
-      console.log('Starting cost calculation...');
+      console.log('--- Starting cost calculation ---');
       
       // Get current variable values from UI
       this.syncVariablesFromUI();
 
-      // Calculate costs
-      const results = this.costEngine.calculateTotalCost();
+      // Get selected systems
+      const selectedSystems = this.uiController.getSelectedSystems();
+      console.log(`Selected systems: [${selectedSystems.join(', ')}]`);
+      
+      if (selectedSystems.length === 0) {
+        console.warn('No systems selected');
+        this.showError('Please select at least one system');
+        return;
+      }
 
-      // Update UI with results
-      this.uiController.updateResults(results);
-
-      console.log('Cost calculation completed:', results);
+      if (selectedSystems.length === 1) {
+        // Single system calculation
+        console.log(`Calculating costs for single system: ${selectedSystems[0]}`);
+        const systemInfo = this.configManager.getSystemInfo(selectedSystems[0]);
+        console.log(`System: ${systemInfo.name}`);
+        
+        const systemCosts = this.configManager.getSystemCosts(selectedSystems[0]);
+        this.costEngine.setSystemCosts(selectedSystems[0], systemCosts);
+        const results = this.costEngine.calculateTotalCost();
+        
+        console.log(`Total cost: $${results.total.toFixed(2)}`);
+        console.log('Service breakdown:', results.breakdown.map(b => 
+          `${b.service}: $${b.cost.toFixed(2)} (${b.percentage.toFixed(1)}%)`
+        ).join(', '));
+        
+        // Update UI with results
+        this.uiController.updateResults(results);
+        console.log('✓ Single system calculation completed');
+      } else {
+        // Multi-system calculation
+        console.log(`Calculating costs for ${selectedSystems.length} systems`);
+        const systemResults = this.costEngine.calculateMultiSystemCosts(selectedSystems);
+        
+        systemResults.forEach((result, index) => {
+          const systemInfo = this.configManager.getSystemInfo(result.systemId);
+          console.log(`System ${index + 1}: ${systemInfo.name} - Total: $${result.total.toFixed(2)}`);
+        });
+        
+        // Calculate combined results across all systems
+        const combinedResults = this.combineSystemResults(systemResults);
+        
+        // Display combined results in the main view
+        this.uiController.updateResults(combinedResults);
+        
+        // Update comparison chart
+        this.uiController.updateComparisonChart(systemResults);
+        
+        console.log('✓ Multi-system calculation completed');
+      }
+      
+      console.log('--- Cost calculation finished ---');
 
     } catch (error) {
       console.error('Error calculating costs:', error);
@@ -265,12 +328,6 @@ class CostEstimatorApp {
    * Sync variables from UI inputs to cost engine
    */
   syncVariablesFromUI() {
-    // Get base costs and set them as variables
-    const baseCosts = this.configManager.getBaseCosts();
-    for (const [key, value] of Object.entries(baseCosts)) {
-      this.costEngine.setVariable(key, value);
-    }
-
     // Get current input values
     document.querySelectorAll('.variable-input').forEach(input => {
       const variableName = input.dataset.variable;
@@ -285,6 +342,57 @@ class CostEstimatorApp {
   }
 
   /**
+   * Combine results from multiple systems into a single summary
+   */
+  combineSystemResults(systemResults) {
+    const combinedServices = {};
+    let combinedTotal = 0;
+    const allSupportedServices = new Set();
+    const allUnsupportedServices = new Set();
+    
+    // Aggregate costs across all systems
+    systemResults.forEach(result => {
+      combinedTotal += result.total;
+      
+      // Track supported/unsupported services
+      result.supportedServices?.forEach(s => allSupportedServices.add(s));
+      result.unsupportedServices?.forEach(s => allUnsupportedServices.add(s));
+      
+      // Sum up costs for each service
+      Object.entries(result.services || {}).forEach(([service, cost]) => {
+        if (cost !== null && !isNaN(cost)) {
+          combinedServices[service] = (combinedServices[service] || 0) + cost;
+        }
+      });
+    });
+    
+    // Generate breakdown
+    const breakdown = Object.entries(combinedServices)
+      .filter(([_, cost]) => cost > 0)
+      .map(([service, cost]) => ({
+        service,
+        cost,
+        percentage: (cost / combinedTotal) * 100
+      }))
+      .sort((a, b) => b.cost - a.cost);
+    
+    // Only show unsupported if ALL systems don't support it
+    const unsupportedServices = Array.from(allUnsupportedServices).filter(service => 
+      !allSupportedServices.has(service)
+    );
+    
+    return {
+      services: combinedServices,
+      total: combinedTotal,
+      breakdown,
+      supportedServices: Array.from(allSupportedServices),
+      unsupportedServices,
+      isMultiSystem: true,
+      systemCount: systemResults.length
+    };
+  }
+
+  /**
    * Load default variables for all services
    */
   loadDefaultVariables() {
@@ -296,6 +404,14 @@ class CostEstimatorApp {
         this.costEngine.setVariable(key, value);
       }
     });
+
+    // Load base costs as variables from first system (for backward compatibility)
+    const systems = this.configManager.getSystems();
+    const firstSystemId = Object.keys(systems)[0];
+    if (firstSystemId) {
+      const systemCosts = this.configManager.getSystemCosts(firstSystemId);
+      this.costEngine.setSystemCosts(firstSystemId, systemCosts);
+    }
 
     // Load base costs as variables
     const baseCosts = this.configManager.getBaseCosts();
@@ -324,10 +440,69 @@ class CostEstimatorApp {
       const config = this.configManager.exportConfig();
       const state = this.costEngine.exportState();
       
+      // Get selected systems
+      const selectedSystems = this.uiController?.getSelectedSystems() || [];
+      const systemInfo = selectedSystems.map(systemId => {
+        const info = this.configManager.getSystemInfo(systemId);
+        return {
+          id: systemId,
+          ...(info || {})
+        };
+      });
+      
+      // Get all service parameters
+      const serviceParameters = {};
+      const formulas = this.costEngine?.formulas || {};
+      for (const serviceType of Object.keys(formulas)) {
+        try {
+          const vars = this.uiController.getServiceVariables(serviceType);
+          const params = {};
+          if (vars) {
+            for (const varName of Object.keys(vars)) {
+              params[varName] = this.costEngine.getVariable(varName);
+            }
+          }
+          serviceParameters[serviceType] = params;
+        } catch (error) {
+          console.warn(`Could not get parameters for ${serviceType}:`, error);
+          serviceParameters[serviceType] = {};
+        }
+      }
+      
+      // Get global multipliers
+      const multipliers = {
+        volumeTier: document.getElementById('volume-tier')?.value || 'not set',
+        contractType: document.getElementById('contract-type')?.value || 'not set',
+        supportLevel: document.getElementById('support-level')?.value || 'not set',
+        slaLevel: document.getElementById('sla-level')?.value || 'not set'
+      };
+      
+      // Calculate current costs for export
+      let calculatedResults = null;
+      try {
+        if (selectedSystems.length === 1) {
+          calculatedResults = this.costEngine.calculateTotalCost();
+        } else if (selectedSystems.length > 1) {
+          calculatedResults = this.costEngine.calculateMultiSystemCosts(selectedSystems);
+        }
+      } catch (error) {
+        console.warn('Could not calculate results for export:', error);
+        calculatedResults = { error: 'Calculation failed: ' + error.message };
+      }
+      
       const exportData = {
+        metadata: {
+          timestamp: new Date().toISOString(),
+          dateFormatted: new Date().toLocaleString(),
+          applicationVersion: '1.0.0',
+          exportType: 'cost-estimation-snapshot'
+        },
+        selectedSystems: systemInfo,
+        serviceParameters,
+        globalMultipliers: multipliers,
+        calculatedResults,
         configuration: config,
-        currentState: state,
-        timestamp: new Date().toISOString()
+        currentState: state
       };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -342,6 +517,8 @@ class CostEstimatorApp {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      
+      console.log('Configuration exported successfully');
 
     } catch (error) {
       console.error('Error exporting configuration:', error);
@@ -359,6 +536,22 @@ class CostEstimatorApp {
     
     const button = document.getElementById('advanced-toggle');
     button.textContent = isVisible ? 'Advanced Settings' : 'Hide Advanced Settings';
+  }
+
+  /**
+   * Toggle resources panel
+   */
+  toggleResourcesPanel() {
+    const panel = document.getElementById('resources-panel');
+    const isVisible = panel.style.display !== 'none';
+    const newDisplay = isVisible ? 'none' : 'block';
+    panel.style.display = newDisplay;
+    
+    const button = document.getElementById('resources-toggle');
+    const newText = isVisible ? '📚 View Configuration Resources' : '📚 Hide Configuration Resources';
+    button.textContent = newText;
+    
+    console.log(`Resources panel toggled: ${newDisplay} (was ${isVisible ? 'visible' : 'hidden'})`);
   }
 
   /**

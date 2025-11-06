@@ -30,6 +30,14 @@
             <div class="content-grid">
                 <!-- Variable Controls -->
                 <div class="controls-panel">
+                    <h2>System Selection</h2>
+                    <div class="system-selection">
+                        <p class="system-selection-label">Select one or more systems to compare:</p>
+                        <div id="system-checkboxes" class="system-checkboxes">
+                            <!-- System checkboxes will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    
                     <h2>Service Parameters</h2>
                     <div id="variable-controls" class="variable-controls">
                         <!-- Dynamic controls will be inserted here -->
@@ -57,6 +65,11 @@
 
                     <div class="chart-container">
                         <canvas id="cost-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container" id="system-comparison-chart-container" style="display: none;">
+                        <h3>System Cost Comparison</h3>
+                        <canvas id="system-comparison-chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -114,7 +127,57 @@
         <footer class="footer">
             <p>Cost calculations are estimates based on current configuration. Actual costs may vary.</p>
             <p>Configuration last updated: <span id="config-timestamp">Loading...</span></p>
+            
+            <div class="resources-section">
+                <button id="resources-toggle" class="btn-link">📚 View Configuration Resources</button>
+                <div id="resources-panel" class="resources-panel" style="display: none;">
+                    <h3>Configuration Resources</h3>
+                    <div class="resource-links">
+                        <div class="resource-group">
+                            <h4>📄 Configuration Files</h4>
+                            <ul>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/config/base-costs.yaml" target="_blank" rel="noopener noreferrer">Base Costs (YAML)</a></li>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/config/formulas.yaml" target="_blank" rel="noopener noreferrer">Formulas (YAML)</a></li>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/config/multipliers.yaml" target="_blank" rel="noopener noreferrer">Multipliers (YAML)</a></li>
+                            </ul>
+                        </div>
+                        <div class="resource-group">
+                            <h4>📚 Documentation</h4>
+                            <ul>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/docs/configuration.md" target="_blank" rel="noopener noreferrer">Configuration Guide</a></li>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/docs/examples.md" target="_blank" rel="noopener noreferrer">Examples</a></li>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/docs/deployment.md" target="_blank" rel="noopener noreferrer">Deployment Guide</a></li>
+                            </ul>
+                        </div>
+                        <div class="resource-group">
+                            <h4>🔧 Repository</h4>
+                            <ul>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/README.md" target="_blank" rel="noopener noreferrer">README</a></li>
+                                <li><a href="https://github.com/dstaulcu/data-provider-cost-estimator/issues" target="_blank" rel="noopener noreferrer">Issues & Feedback</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </footer>
+
+        <!-- Console Log Viewer -->
+        <div class="log-viewer" id="log-viewer">
+            <div class="log-viewer-resize-handle" id="log-resize-handle" title="Drag to resize"></div>
+            <div class="log-viewer-header">
+                <button id="log-viewer-toggle" class="log-viewer-toggle" title="Toggle console logs (Ctrl+`)">
+                    <span class="log-icon">📋</span> Console Logs
+                    <span class="log-badge" id="log-count">0</span>
+                </button>
+                <button id="log-clear" class="log-clear-btn" style="display: none;" title="Clear all logs">Clear</button>
+            </div>
+            <div id="log-viewer-content" class="log-viewer-content" style="display: none;">
+                <div id="log-entries" class="log-entries">
+                    <!-- Log entries will be inserted here -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Loading Overlay -->
