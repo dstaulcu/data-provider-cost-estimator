@@ -113,20 +113,20 @@ export class UIController {
         data_volume_gb: { 
           type: 'range', 
           min: 1, 
-          max: 10000, 
+          max: 20000, 
           step: 1, 
           default: 100,
-          label: 'Data Volume (GB)',
-          description: 'Amount of data to transport'
+          label: 'Data Volume (GB/day)',
+          description: 'Amount of data to transport per day'
         },
         egress_volume_gb: { 
           type: 'range', 
           min: 0, 
-          max: 5000, 
+          max: 20000, 
           step: 1, 
           default: 50,
-          label: 'Egress Volume (GB)',
-          description: 'Data transferred out'
+          label: 'Egress Volume (GB/day)',
+          description: 'Data transferred out per day'
         },
         priority_level: { 
           type: 'select', 
@@ -155,11 +155,11 @@ export class UIController {
         storage_volume_gb: { 
           type: 'range', 
           min: 10, 
-          max: 100000, 
+          max: 20000, 
           step: 10, 
           default: 1000,
           label: 'Storage Volume (GB)',
-          description: 'Total storage capacity needed'
+          description: 'Total storage capacity needed (daily average)'
         }
       },
       extraction: {
@@ -169,8 +169,8 @@ export class UIController {
           max: 200, 
           step: 1, 
           default: 10,
-          label: 'Processing Hours',
-          description: 'Hours of processing time'
+          label: 'Processing Hours (per day)',
+          description: 'Hours of processing time per day'
         },
         extraction_complexity: { 
           type: 'select', 
@@ -191,8 +191,8 @@ export class UIController {
           max: 10000000, 
           step: 1000, 
           default: 10000,
-          label: 'Record Count',
-          description: 'Number of records to process'
+          label: 'Record Count (per day)',
+          description: 'Number of records to process per day'
         },
         data_quality_score: { 
           type: 'range', 
@@ -233,8 +233,8 @@ export class UIController {
           max: 100, 
           step: 1, 
           default: 5,
-          label: 'Training Hours',
-          description: 'Model training time'
+          label: 'Training Hours (per day)',
+          description: 'Model training time per day'
         },
         inference_requests: { 
           type: 'range', 
@@ -242,8 +242,8 @@ export class UIController {
           max: 1000000, 
           step: 100, 
           default: 1000,
-          label: 'Inference Requests',
-          description: 'Monthly prediction requests'
+          label: 'Inference Requests (per day)',
+          description: 'Daily prediction requests'
         }
       },
       search: {
@@ -253,13 +253,13 @@ export class UIController {
           max: 10000000, 
           step: 1000, 
           default: 10000,
-          label: 'Search Queries',
-          description: 'Monthly search queries'
+          label: 'Search Queries (per day)',
+          description: 'Daily search queries'
         },
         search_index_gb: { 
           type: 'range', 
           min: 10, 
-          max: 10000, 
+          max: 20000, 
           step: 10, 
           default: 100,
           label: 'Search Index Size (GB)',
@@ -306,8 +306,8 @@ export class UIController {
           max: 200, 
           step: 5, 
           default: 20,
-          label: 'Analysis Hours',
-          description: 'Monthly analysis hours'
+          label: 'Analysis Hours (per day)',
+          description: 'Daily analysis hours'
         }
       }
     };
@@ -401,8 +401,8 @@ export class UIController {
   updateResults(results) {
     // Update total cost with system count indicator if multi-system
     const totalLabel = results.isMultiSystem 
-      ? `Combined Total (${results.systemCount} systems):`
-      : 'Total Monthly Cost:';
+      ? `Combined Daily Total (${results.systemCount} systems):`
+      : 'Total Daily Cost:';
     
     // Update the label if needed
     const costLabelElement = document.querySelector('.cost-label');

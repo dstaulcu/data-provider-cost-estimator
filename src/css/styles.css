@@ -53,6 +53,56 @@ body {
 .subtitle {
   font-size: 1.1rem;
   color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* Header Resources */
+.header-resources {
+  margin-top: 20px;
+}
+
+.resources-toggle-btn {
+  font-size: 0.95rem;
+  padding: 8px 16px;
+}
+
+.header-resources-panel {
+  margin-top: 15px;
+  padding: 15px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.resource-links-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.resource-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.resource-group-inline strong {
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.resource-group-inline a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.resource-group-inline a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
 
 /* Service Tabs */

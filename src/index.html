@@ -12,7 +12,33 @@
     <div class="container">
         <header class="header">
             <h1>Data Provider Cost Estimator</h1>
-            <p class="subtitle">Calculate costs for transport, storage, extraction, enrichment, modeling, search & exploration</p>
+            <p class="subtitle">Calculate daily costs for transport, storage, extraction, enrichment, modeling, search & exploration</p>
+            
+            <!-- Resources Panel at Top -->
+            <div class="header-resources">
+                <button id="header-resources-toggle" class="btn-link resources-toggle-btn">📚 Configuration Resources</button>
+                <div id="header-resources-panel" class="header-resources-panel" style="display: none;">
+                    <div class="resource-links-compact">
+                        <div class="resource-group-inline">
+                            <strong>📄 Config Files:</strong>
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/config/base-costs.yaml" target="_blank" rel="noopener noreferrer">Base Costs</a> |
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/config/formulas.yaml" target="_blank" rel="noopener noreferrer">Formulas</a> |
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/config/multipliers.yaml" target="_blank" rel="noopener noreferrer">Multipliers</a>
+                        </div>
+                        <div class="resource-group-inline">
+                            <strong>📚 Docs:</strong>
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/docs/configuration.md" target="_blank" rel="noopener noreferrer">Configuration</a> |
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/docs/examples.md" target="_blank" rel="noopener noreferrer">Examples</a> |
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/blob/master/README.md" target="_blank" rel="noopener noreferrer">README</a>
+                        </div>
+                        <div class="resource-group-inline">
+                            <strong>🔧 Links:</strong>
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator" target="_blank" rel="noopener noreferrer">GitHub Repo</a> |
+                            <a href="https://github.com/dstaulcu/data-provider-cost-estimator/issues" target="_blank" rel="noopener noreferrer">Issues & Feedback</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <div class="main-content">
@@ -55,7 +81,7 @@
                     <h2>Cost Breakdown</h2>
                     
                     <div class="total-cost">
-                        <span class="cost-label">Total Monthly Cost:</span>
+                        <span class="cost-label">Total Daily Cost:</span>
                         <span id="total-cost-value" class="cost-value">$0.00</span>
                     </div>
 

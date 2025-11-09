@@ -132,7 +132,12 @@ class CostEstimatorApp {
       this.toggleAdvancedSettings();
     });
 
-    // Resources panel toggle
+    // Header resources panel toggle
+    document.getElementById('header-resources-toggle').addEventListener('click', () => {
+      this.toggleHeaderResourcesPanel();
+    });
+
+    // Resources panel toggle (footer)
     document.getElementById('resources-toggle').addEventListener('click', () => {
       this.toggleResourcesPanel();
     });
@@ -536,6 +541,20 @@ class CostEstimatorApp {
     
     const button = document.getElementById('advanced-toggle');
     button.textContent = isVisible ? 'Advanced Settings' : 'Hide Advanced Settings';
+  }
+
+  /**
+   * Toggle header resources panel
+   */
+  toggleHeaderResourcesPanel() {
+    const panel = document.getElementById('header-resources-panel');
+    const isVisible = panel.style.display !== 'none';
+    const newDisplay = isVisible ? 'none' : 'block';
+    panel.style.display = newDisplay;
+    
+    const button = document.getElementById('header-resources-toggle');
+    const newText = isVisible ? '📚 Configuration Resources' : '📚 Hide Resources';
+    button.textContent = newText;
   }
 
   /**
