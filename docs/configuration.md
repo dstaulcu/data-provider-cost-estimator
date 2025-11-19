@@ -333,8 +333,26 @@ Enable debug logging in the browser console:
 
 ```javascript
 // In browser console
-localStorage.setItem('cost-estimator-debug', 'true');
+localStorage.setItem('cost-estimator:debug', 'true');
 location.reload();
+```
+
+**Note**: This application uses namespaced localStorage keys with the prefix `cost-estimator:` to avoid collisions with other applications sharing the same domain. If you need to store user preferences or state, always use the `StorageManager` utility from `src/js/storage.js`:
+
+```javascript
+import { StorageManager } from './storage.js';
+
+// Store user preference
+StorageManager.setItem('theme', 'dark');
+
+// Retrieve preference
+const theme = StorageManager.getItem('theme');
+
+// Remove preference
+StorageManager.removeItem('theme');
+
+// Clear all app-specific storage
+StorageManager.clear();
 ```
 
 ## Best Practices

@@ -70,6 +70,12 @@ Cost variables and formulas are managed through configuration files in the `conf
 ├── src/                    # Source code
 │   ├── index.html         # Main application entry point
 │   ├── js/                # JavaScript modules
+│   │   ├── config-manager.js   # Configuration loading
+│   │   ├── cost-engine.js      # Cost calculation engine
+│   │   ├── ui-controller.js    # UI management
+│   │   ├── logger.js           # Console logging
+│   │   ├── storage.js          # Namespaced localStorage utility
+│   │   └── main.js             # Application entry point
 │   ├── css/               # Stylesheets
 │   └── components/        # Reusable UI components
 ├── config/                # Cost configuration files
@@ -77,6 +83,8 @@ Cost variables and formulas are managed through configuration files in the `conf
 ├── scripts/               # Build and deployment scripts
 └── docs/                  # Documentation
 ```
+
+**Note**: When deployed to a shared S3 bucket, this app uses namespaced localStorage keys (`cost-estimator:*`) to avoid conflicts with other applications on the same domain. Use the `StorageManager` utility for all localStorage operations.
 
 ## Contributing
 
