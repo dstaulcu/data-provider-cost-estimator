@@ -15,14 +15,24 @@ export class ConfigManager {
   }
 
   /**
+   * Get base path for assets (respects Vite's base configuration)
+   */
+  getBasePath() {
+    // Use the base path from the document or default to current directory
+    const base = document.querySelector('base')?.getAttribute('href') || './';
+    return base;
+  }
+
+  /**
    * Load configuration from files
    */
   async loadConfig() {
     try {
+      const basePath = this.getBasePath();
       const [baseCosts, formulas, multipliers] = await Promise.all([
-        this.loadYamlFile('/config/base-costs.yaml'),
-        this.loadYamlFile('/config/formulas.yaml'),
-        this.loadYamlFile('/config/multipliers.yaml')
+        this.loadYamlFile(`${basePath}config/base-costs.yaml`),
+        this.loadYamlFile(`${basePath}config/formulas.yaml`),
+        this.loadYamlFile(`${basePath}config/multipliers.yaml`)
       ]);
 
       this.config.baseCosts = baseCosts;

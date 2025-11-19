@@ -45,9 +45,15 @@ A web-based cost estimation tool for data service providers specializing in tran
    ```
 
 4. **Deploy to S3:**
-   ```bash
-   export S3_BUCKET_NAME=your-bucket-name
-   npm run deploy
+   ```powershell
+   # Deploy to bucket root
+   .\deploy.ps1 -BucketName your-bucket-name
+   
+   # Deploy to subdirectory (e.g., cost-estimator/dev)
+   .\deploy.ps1 -BucketName 293354421824-10xtools -Prefix cost-estimator/dev
+   
+   # Deploy to different region
+   .\deploy.ps1 -BucketName your-bucket -Prefix path/to/app -Region us-west-2
    ```
 
 ## Configuration
